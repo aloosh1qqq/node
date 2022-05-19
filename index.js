@@ -1,0 +1,32 @@
+const express = require('express');
+const req = require('express/lib/request');
+const app = express();
+const monogoose = require('mongoose');
+const { MONGO_DB_CONFIG, MONGO_DB_CONGIG } = require("./config/app.config");
+const errors = require("./middleware/error");
+const helmet = require('helmet');
+const compreesion = require('compression');
+
+
+monogoose.Promise = global.Promise;
+monogoose.connect(MONGO_DB_CONGIG.DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(
+    () => {
+        console.log("Database Connected");
+    },
+    (error) => {
+        console.log("Database cann't be connected: " + error);
+    }
+)
+app.use(helmet());
+app.use(compreesion());
+app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+app.use("/api", require("./routes/app.rout"));
+app.use(errors.errorHandler);
+
+app.listen(process.env.port || 4000, function() {
+    console.log("Ready to Go!");
+});
